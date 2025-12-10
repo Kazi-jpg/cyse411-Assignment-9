@@ -27,11 +27,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install semgrep
 
-      - name: Run Semgrep SAST (OWASP Rules)
+      - name: Run Semgrep SAST (IDOR only)
         run: |
-          semgrep \
+          semgrep idor/ \
           --config p/owasp-top-ten \
           --sarif --output semgrep-idor.sarif
+
 
       - name: Upload SARIF to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
