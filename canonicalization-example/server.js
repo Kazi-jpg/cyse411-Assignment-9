@@ -10,22 +10,11 @@ app.disable('x-powered-by');
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-// Security headers
+// Security headers applied to all responses (including static files)
 app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
-    [
-      "default-src 'self'",
-      "script-src 'self'",
-      "style-src 'self'",
-      "img-src 'self'",
-      "font-src 'self'",
-      "connect-src 'self'",
-      "frame-ancestors 'none'",
-      "form-action 'self'",
-      "base-uri 'none'",
-      "object-src 'none'"
-    ].join('; ')
+    "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'none'; object-src 'none'"
   );
   res.setHeader(
     'Permissions-Policy',
@@ -35,6 +24,7 @@ app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
   res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, private');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
@@ -90,6 +80,7 @@ app.post('/read-no-validate', (req, res) => {
   if (!normalized.startsWith(BASE_DIR + path.sep)) {
     return res.status(403).json({ error: 'Path traversal detected' });
   }
+
   if (!fs.existsSync(normalized)) {
     return res.status(404).json({ error: 'File not found' });
   }
@@ -113,7 +104,6 @@ app.post('/setup-sample', (req, res) => {
   res.json({ ok: true, base: BASE_DIR });
 });
 
-// Only listen when run directly (not when imported by tests)
 if (require.main === module) {
   const port = process.env.PORT || 4000;
   app.listen(port, () => {
