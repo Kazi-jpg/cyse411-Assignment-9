@@ -19,7 +19,6 @@ const orders = [
 
 // Very simple "authentication" via headers:
 //   X-User-Id: <user id>
-//   (we pretend that real auth already happened)
 function fakeAuth(req, res, next) {
   const idHeader = req.header("X-User-Id");
   const id = idHeader ? parseInt(idHeader, 10) : null;
@@ -29,7 +28,6 @@ function fakeAuth(req, res, next) {
     return res.status(401).json({ error: "Unauthenticated: set X-User-Id" });
   }
 
-  // Attach authenticated user to the request
   req.user = user;
   next();
 }
@@ -37,20 +35,20 @@ function fakeAuth(req, res, next) {
 // Apply fakeAuth to all routes below this line
 app.use(fakeAuth);
 
-// VULNERABLE endpoint: no ownership check (IDOR)
+// Fixed endpoint: enforce ownership (no IDOR)
 app.get("/orders/:id", (req, res) => {
   const orderId = parseInt(req.params.id, 10);
 
-  const order = orders.find((o) => o.id === orderId);
+  const order = orders.find(
+    (o) => o.id === orderId && o.userId === req.user.id
+  );
+
   if (!order) {
     return res.status(404).json({ error: "Order not found" });
   }
 
-  // BUG: no check that order.userId === req.user.id
   return res.json(order);
 });
-
-
 
 // Health check
 app.get("/", (req, res) => {
