@@ -29,9 +29,10 @@ jobs:
       - name: Run OWASP ZAP Full Scan
         uses: zaproxy/action-full-scan@v0.13.0
         with:
-           target: 'http://localhost:4000'
-           fail_action: false
-           allow_issue_writing: false
-           rules_file_name: zap-rules.tsv
+          target: 'http://localhost:4000'
+          fail_action: false
+          allow_issue_writing: false
+          rules_file_name: zap-rules.tsv
+
 
           
