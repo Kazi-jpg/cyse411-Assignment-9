@@ -1,4 +1,4 @@
-name: SAST - Semgrep (IDOR)
+name: SAST - IDOR Example
 
 on:
   workflow_dispatch:
