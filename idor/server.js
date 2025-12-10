@@ -1,6 +1,15 @@
 const express = require("express");
 const app = express();
 
+// Disable X-Powered-By header
+app.disable("x-powered-by");
+
+// Allow caching to remove "Non-Storable Content" alert
+app.use((req, res, next) => {
+  res.setHeader("Cache-Control", "public, max-age=60");
+  next();
+});
+
 app.use(express.json());
 
 // Fake "database"
@@ -17,8 +26,7 @@ const orders = [
   { id: 4, userId: 2, item: "Keyboard", region: "south", total: 60 },
 ];
 
-// Very simple "authentication" via headers:
-//   X-User-Id: <user id>
+// Fake auth via header
 function fakeAuth(req, res, next) {
   const idHeader = req.header("X-User-Id");
   const id = idHeader ? parseInt(idHeader, 10) : null;
@@ -32,10 +40,10 @@ function fakeAuth(req, res, next) {
   next();
 }
 
-// Apply fakeAuth to all routes below this line
+// Apply fakeAuth globally
 app.use(fakeAuth);
 
-// Fixed endpoint: enforce ownership (no IDOR)
+// Fixed IDOR endpoint
 app.get("/orders/:id", (req, res) => {
   const orderId = parseInt(req.params.id, 10);
 
@@ -55,8 +63,8 @@ app.get("/", (req, res) => {
   res.json({ message: "Access Control Tutorial API", currentUser: req.user });
 });
 
-// Start server
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
+
